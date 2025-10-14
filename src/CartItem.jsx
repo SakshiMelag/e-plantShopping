@@ -1,68 +1,92 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { removeItem, updateQuantity } from './CartSlice';
-import './CartItem.css';
 
-const CartItem = ({ onContinueShopping }) => {
-  const cart = useSelector(state => state.cart.items);
+function CartItem({ onContinueShopping }) {
   const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items);
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
 
-  // Calculate total amount for all products in the cart
+  // Calculate subtotal for an item
+  const calculateItemSubtotal = (item) => {
+    const price = parseFloat(item.cost.substring(1));
+    return (price * item.quantity).toFixed(2);
+  };
+
+  // Calculate total amount for cart
   const calculateTotalAmount = () => {
- 
+    return cartItems
+      .reduce((total, item) => total + parseFloat(item.cost.substring(1)) * item.quantity, 0)
+      .toFixed(2);
   };
 
-  const handleContinueShopping = (e) => {
-   
-  };
-
-
-
+  // Increment quantity
   const handleIncrement = (item) => {
+    dispatch(updateQuantity({ name: item.name, quantity: item.quantity + 1 }));
   };
 
+  // Decrement quantity
   const handleDecrement = (item) => {
-   
+    dispatch(updateQuantity({ name: item.name, quantity: item.quantity - 1 }));
   };
 
+  // Remove item
   const handleRemove = (item) => {
+    dispatch(removeItem({ name: item.name }));
   };
 
-  // Calculate total cost based on quantity for an item
-  const calculateTotalCost = (item) => {
+  const handleCheckout = () => {
+    alert('Checkout functionality coming soon!');
   };
 
   return (
     <div className="cart-container">
-      <h2 style={{ color: 'black' }}>Total Cart Amount: ${calculateTotalAmount()}</h2>
-      <div>
-        {cart.map(item => (
-          <div className="cart-item" key={item.name}>
-            <img className="cart-item-image" src={item.image} alt={item.name} />
-            <div className="cart-item-details">
-              <div className="cart-item-name">{item.name}</div>
-              <div className="cart-item-cost">{item.cost}</div>
-              <div className="cart-item-quantity">
-                <button className="cart-item-button cart-item-button-dec" onClick={() => handleDecrement(item)}>-</button>
-                <span className="cart-item-quantity-value">{item.quantity}</span>
-                <button className="cart-item-button cart-item-button-inc" onClick={() => handleIncrement(item)}>+</button>
+      <h2>Your Cart ({totalQuantity} items)</h2>
+
+      {cartItems.length === 0 ? (
+        <p>Your cart is empty.</p>
+      ) : (
+        <>
+          <div className="cart-list">
+            {cartItems.map((item) => (
+              <div
+                className="cart-item"
+                key={item.name}
+                style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}
+              >
+                <img src={item.image} alt={item.name} width="100" />
+                <div>
+                  <h3>{item.name}</h3>
+                  <p>{item.description}</p>
+                  <p>Price: {item.cost}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0' }}>
+                    <button onClick={() => handleDecrement(item)}>-</button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => handleIncrement(item)}>+</button>
+                    <span style={{ marginLeft: '20px' }}>Subtotal: ${calculateItemSubtotal(item)}</span>
+                  </div>
+                  <button
+                    onClick={() => handleRemove(item)}
+                    style={{ backgroundColor: 'red', color: 'white', padding: '5px 10px' }}
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
-              <div className="cart-item-total">Total: ${calculateTotalCost(item)}</div>
-              <button className="cart-item-delete" onClick={() => handleRemove(item)}>Delete</button>
+            ))}
+          </div>
+
+          <div className="cart-summary" style={{ marginTop: '20px' }}>
+            <h3>Total Amount: ${calculateTotalAmount()}</h3>
+            <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+              <button onClick={onContinueShopping}>Continue Shopping</button>
+              <button onClick={handleCheckout}>Checkout</button>
             </div>
           </div>
-        ))}
-      </div>
-      <div style={{ marginTop: '20px', color: 'black' }} className='total_cart_amount'></div>
-      <div className="continue_shopping_btn">
-        <button className="get-started-button" onClick={(e) => handleContinueShopping(e)}>Continue Shopping</button>
-        <br />
-        <button className="get-started-button1">Checkout</button>
-      </div>
+        </>
+      )}
     </div>
   );
-};
+}
 
 export default CartItem;
-
-
